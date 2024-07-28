@@ -1,0 +1,17 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@notifier/rtechnotifier/(.*)": "<rootDir>/../libs/rtechnotifier/src/$1",
+    "@notifier/rtechnotifier": "<rootDir>/../libs/rtechnotifier/src"
+  }
+}

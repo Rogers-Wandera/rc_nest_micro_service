@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+      }
+
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333333;
+        margin-top: 0;
+      }
+
+      p {
+        margin-bottom: 20px;
+      }
+
+      .button {
+        display: inline-block;
+        background-color: #4caf50;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .bold {
+        font-weight: bold;
+        color: lightcoral;
+        font-size: 20px;
+      }
+      .server {
+        color: orange;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hello {{recipientName}}, Verify Your Email</h1>
+      <p class="server">{{serverData}}</p>
+      <p>
+        Thank you for registering! Please click the link below to verify your
+        email address:
+      </p>
+      <a class="button" href="{{link}}"> Click here </a>
+      <p>
+        If you did not register an account, you can safely ignore this email.
+      </p>
+      <div>
+        {{#if moredata.length}} {{#each moredata}}
+        <div style="font-size: 16px; font-weight: 600">{{this}}</div>
+        {{/each}} {{/if}}
+      </div>
+      <p>From <strong class="bold">{{senderName}}</strong></p>
+    </div>
+  </body>
+</html>
