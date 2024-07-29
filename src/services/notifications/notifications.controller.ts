@@ -17,6 +17,7 @@ import {
 import { NOTIFICATION_PATTERN } from 'src/app/patterns/notification.patterns';
 import { Retry } from 'src/app/decorators/retry.decorator';
 import { NotificationResendService } from './notificationresend/notificationresend.service';
+import { Message, Channel } from 'amqplib';
 
 @Controller('notifications')
 export class NotificationController {
@@ -33,8 +34,8 @@ export class NotificationController {
     @Ctx() context: RmqContext,
   ) {
     try {
-      const channel = context.getChannelRef();
-      const originalMsg = context.getMessage();
+      const channel = context.getChannelRef() as Channel;
+      const originalMsg = context.getMessage() as Message;
       const response = await this.service.sendNotification(data);
       channel.ack(originalMsg);
       return response;
@@ -51,7 +52,11 @@ export class NotificationController {
   ) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
-    await this.service.SendEventMessage(data);
+    if (data.resendId) {
+      await this.resendservice.ReconcileResend(data);
+    } else {
+      await this.service.SendEventMessage(data);
+    }
     channel.ack(originalMsg);
     return 'Notification sent successfully';
   }
@@ -62,10 +67,22 @@ export class NotificationController {
     @Payload() data: { userId: string },
     @Ctx() context: RmqContext,
   ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    channel.ack(originalMsg);
-    return 'Login notification sent successfully';
+    try {
+      const channel = context.getChannelRef() as Channel;
+      const originalMsg = context.getMessage() as Message;
+      const userresends =
+        await this.resendservice.GetRecipientResendNotification(data.userId);
+      if (userresends) {
+        for (const resend of userresends) {
+          await this.service.SendEventMessage(resend);
+        }
+      }
+      channel.ack(originalMsg);
+      return 'Login notification sent successfully';
+    } catch (error) {
+      this.logger.debug(error.message);
+      throw new RpcException(error);
+    }
   }
 
   @EventPattern({ cmd: NOTIFICATION_PATTERN.RESEND })
@@ -75,11 +92,15 @@ export class NotificationController {
     @Ctx() context: RmqContext,
   ) {
     try {
-      const channel = context.getChannelRef();
-      const originalMsg = context.getMessage();
-      await this.resendservice.ResendSystemNotification(data);
+      const channel = context.getChannelRef() as Channel;
+      const originalMsg = context.getMessage() as Message;
+      if (data.resendId) {
+        await this.resendservice.ReconcileResend(data, 'resend');
+      } else {
+        await this.resendservice.ResendSystemNotification(data);
+      }
       channel.ack(originalMsg);
-      return 'Login notification sent successfully';
+      return 'Notification reschedule successfully';
     } catch (error) {
       this.logger.debug(error.message);
       throw new RpcException(error);

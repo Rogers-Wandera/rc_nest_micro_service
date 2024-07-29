@@ -70,24 +70,24 @@ export class CustomRepository<T> extends MyRepository<T> {
     }
   }
 
-  FindOneAndUpdate = async (
-    conditions: FindOptionsWhere<T>,
-    data: QueryDeepPartialEntity<T>,
-  ) => {
-    try {
-      const exists = await this.findOneBy(conditions);
-      if (!exists) {
-        throw new Error(`No ${this.metadata.tableName} found`);
-      }
-      const response = await this.update(conditions, data);
-      if (response) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      throw error;
-    }
-  };
+  // FindOneAndUpdate = async (
+  //   conditions: FindOptionsWhere<T>,
+  //   data: QueryDeepPartialEntity<T>,
+  // ) => {
+  //   try {
+  //     const exists = await this.findOneBy(conditions);
+  //     if (!exists) {
+  //       throw new Error(`No ${this.metadata.tableName} found`);
+  //     }
+  //     const response = await this.update(conditions, data);
+  //     if (response) {
+  //       return true;
+  //     }
+  //     return false;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // };
 
   softDataDelete = async (
     criteria: FindOptionsWhere<T>,

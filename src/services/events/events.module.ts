@@ -13,7 +13,7 @@ import { EventGatewayService } from './events.service';
           options: {
             withCredentials: true,
             retries: 0,
-            reconnectionAttempts: 10,
+            // reconnectionAttempts: 10,
             reconnectionDelay: 5000,
             requestTimeout: 40000,
             auth: {

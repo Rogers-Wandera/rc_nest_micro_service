@@ -43,4 +43,28 @@ export class NotificationResendBodyService extends EntityModel<NotificationResen
       throw new RpcException(error.message);
     }
   }
+
+  HandleMediasRebuild(body: NotificationResendBody) {
+    const mediaUrl: mediaTypes[] = [];
+    if (body.media.length > 0) {
+      for (const media in body.media) {
+        const url = {
+          imageUrl: body.media[media].url,
+          type: body.media[media].type,
+        };
+        mediaUrl.push(url);
+      }
+    }
+    return mediaUrl;
+  }
+
+  HandleMetaRebuild(body: NotificationResendBody) {
+    const meta: Record<string, string | number | Boolean | Date> = {};
+    if (body.meta.length > 0) {
+      for (const item in body.meta) {
+        meta[body.meta[item].name] = body.meta[item].value;
+      }
+    }
+    return meta;
+  }
 }

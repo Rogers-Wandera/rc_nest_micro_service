@@ -18,7 +18,7 @@ export class NotificationResendRecipients extends BaseEntityClass {
   @ManyToOne(
     () => NotificationResend,
     (notification) => notification.recipients,
-    { nullable: false },
+    { nullable: false, eager: true },
   )
   @JoinColumn({ name: 'resendId' })
   notification: NotificationResend;
