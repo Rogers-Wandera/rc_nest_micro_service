@@ -1,8 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { RTechSystemNotificationType } from '@notifier/rtechnotifier/types/notify.types';
+import {
+  EmailOptions,
+  RTechSmsMessage,
+  RTechSmsOption,
+  RTechSystemNotificationType,
+} from '@notifier/rtechnotifier/types/notify.types';
 import {
   NOTIFICATION_RESEND_STATUS,
   NOTIFICATION_TYPE,
+  PRIORITY_TYPES,
 } from 'src/app/types/app.types';
 import { NotificationResend } from 'src/entities/core/notificationresend.entity';
 import { EntityDataSource } from 'src/model/enity.data.model';
@@ -12,6 +18,9 @@ import { NotificationResendRecipientService } from './notificationrecipient.serv
 import { NOTIFICATION_PATTERN } from 'src/app/patterns/notification.patterns';
 import { In } from 'typeorm';
 import { NotificationResendRecipients } from 'src/entities/core/notificationresendrecipient.entity';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationData } from '../notification/notification.type';
+import { NotificationTypes } from '@notifier/rtechnotifier/types/enums';
 
 @Injectable()
 export class NotificationResendService extends EntityModel<NotificationResend> {
@@ -19,6 +28,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
     datasource: EntityDataSource,
     private readonly resendbody: NotificationResendBodyService,
     private readonly resendrecipient: NotificationResendRecipientService,
+    private service: NotificationService,
   ) {
     super(NotificationResend, datasource);
   }
@@ -28,6 +38,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
       this.entity.priority = data.priority;
       this.entity.type = NOTIFICATION_TYPE.PUSH_SYSTEM;
       this.entity.command = NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION;
+      this.entity.notificationType = data.type;
       this.entity.link = data.link;
       this.entity.createdBy = 'system';
       this.entity.updatedBy = 'system';
@@ -80,7 +91,10 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
     );
     const meta = this.resendbody.HandleMetaRebuild(recipient.notification.body);
     const data: RTechSystemNotificationType = {
-      recipient: { type: 'no broadcast', recipients: [recipient.recipient] },
+      recipient: {
+        type: 'no broadcast',
+        recipients: [{ to: recipient.recipient }],
+      },
       data: {
         message: recipient.notification.body.message,
         title: recipient.notification.body.title,
@@ -119,7 +133,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
         const res = await this.resendrecipient.repository.findOne({
           relations: { notification: true },
           where: {
-            recipient: recipients[recipient],
+            recipient: recipients[recipient].to as string,
             notification: { id: resendId },
           },
         });
@@ -164,6 +178,21 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
           { id: data.resendId },
           { resendCount: response.resendCount + 1 },
         );
+        const senddata: NotificationData = {
+          type: NOTIFICATION_TYPE.PUSH_SYSTEM,
+          notificationType: data.type,
+          pattern: data.pattern,
+          priority: data.priority,
+          createdBy: data.createdBy || 'system',
+          data: data.data,
+          link: data.link,
+          recipient:
+            data.recipient.type === 'no broadcast'
+              ? data.recipient.recipients
+              : [{ to: 'broadcast' }],
+          command: NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION_SENT,
+        };
+        await this.service.SaveSystemNotification(senddata);
       } else {
         await this.repository.update(
           { id: data.resendId },
@@ -173,7 +202,10 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
       const check = await this.repository.findOne({
         where: { id: data.resendId },
       });
-      if (check.recipientCount === check.resendCount) {
+      if (
+        check.recipientCount === check.resendCount ||
+        check.resendCount > check.recipientCount
+      ) {
         await this.repository.update(
           { id: data.resendId },
           { status: NOTIFICATION_RESEND_STATUS.SENT, updateDate: new Date() },
@@ -181,5 +213,67 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
       }
     }
     return response;
+  }
+
+  async ResendEmailService(data: EmailOptions) {
+    try {
+      this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.priority = PRIORITY_TYPES.HIGH;
+      this.entity.type = NOTIFICATION_TYPE.EMAIL;
+      this.entity.command = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.notificationType =
+        data.notificationType || NotificationTypes.CUSTOM;
+      this.entity.createdBy = 'system';
+      this.entity.updatedBy = 'system';
+      this.entity.recipientCount = Array.isArray(data.payload.to)
+        ? data.payload.to.length
+        : 1;
+      const response = await this.repository.save(this.entity);
+      this.resendbody.entity.notification = response;
+      this.resendrecipient.entity.notification = response;
+      await this.resendbody.CreateBody({
+        timestamp: new Date(),
+        title: data.payload.subject,
+        message: data.payload.context.body,
+      });
+      await this.resendrecipient.CreateRecipient({
+        type: 'no broadcast',
+        recipients: data.payload.to,
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async ResendSmsService(data: RTechSmsOption) {
+    try {
+      this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.priority = PRIORITY_TYPES.HIGH;
+      this.entity.type = NOTIFICATION_TYPE.SMS;
+      this.entity.command = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.notificationType =
+        data.message.notificationType || NotificationTypes.CUSTOM;
+      this.entity.createdBy = 'system';
+      this.entity.updatedBy = 'system';
+      this.entity.recipientCount = Array.isArray(data.message.to)
+        ? data.message.to.length
+        : 1;
+      const response = await this.repository.save(this.entity);
+      this.resendbody.entity.notification = response;
+      this.resendrecipient.entity.notification = response;
+      await this.resendbody.CreateBody({
+        timestamp: new Date(),
+        title: `Sms sent from ${data.provider} service`,
+        message: data.message.body,
+      });
+      await this.resendrecipient.CreateRecipient({
+        type: 'no broadcast',
+        recipients: data.message.to,
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 }

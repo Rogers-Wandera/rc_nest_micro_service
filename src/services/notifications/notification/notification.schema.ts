@@ -17,14 +17,30 @@ const validateSms = Joi.object<RTechSmsOption>({
     body: Joi.string().required().messages({
       'any.required': 'body is required',
     }),
-    to: Joi.alternatives()
-      .try(Joi.string(), Joi.array().items(Joi.string()))
+    to: Joi.array()
+      .items(
+        Joi.object({
+          to: Joi.string().required(),
+          priority: Joi.string().optional().valid('high', 'medium', 'low'),
+        }),
+      )
       .required()
       .messages({
         'any.required': 'to is required',
         'alternatives.types': 'to must be a string or an array of strings',
       }),
     sender: Joi.string().optional(),
+    priority: Joi.string().valid('high', 'medium', 'low').optional().messages({
+      'any.only': 'priority must be high, medium, or low',
+    }),
+    notificationType: Joi.string()
+      .valid('info', 'warning', 'error', 'success', 'custom')
+      .required()
+      .messages({
+        'any.required': 'notificationType is required',
+        'any.only':
+          'notificationType must be info, warning, error, success, or custom',
+      }),
   })
     .required()
     .messages({

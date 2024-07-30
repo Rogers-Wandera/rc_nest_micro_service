@@ -7,7 +7,10 @@ import {
 } from 'typeorm';
 import { BaseEntityClass } from '../base.entity';
 import { NotificationResend } from './notificationresend.entity';
-import { NOTIFICATION_RESEND_STATUS } from 'src/app/types/app.types';
+import {
+  NOTIFICATION_RESEND_STATUS,
+  PRIORITY_TYPES,
+} from 'src/app/types/app.types';
 
 @Entity({ name: 'notificationresendrecipients' })
 export class NotificationResendRecipients extends BaseEntityClass {
@@ -22,6 +25,8 @@ export class NotificationResendRecipients extends BaseEntityClass {
   )
   @JoinColumn({ name: 'resendId' })
   notification: NotificationResend;
+  @Column({ type: 'enum', enum: PRIORITY_TYPES, nullable: false })
+  priority: PRIORITY_TYPES;
   @Column({
     nullable: false,
     type: 'enum',

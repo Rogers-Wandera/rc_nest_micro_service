@@ -26,7 +26,6 @@ export class RTECHPushNotificationService {
   }
 
   public async sendSystemNotification(data: RTechSystemNotificationType) {
-    // await this.client.connect();
     return this.client.emit(
       { cmd: NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION },
       data,

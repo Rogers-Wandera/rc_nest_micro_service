@@ -11,10 +11,14 @@ import { Channel, Message } from 'amqplib';
 import { catchError, retry, throwError } from 'rxjs';
 import { RETRY_KEY } from 'src/app/decorators/retry.decorator';
 import { ErrorResponse } from 'src/app/types/error.types';
+import { NotificationResendService } from 'src/services/notifications/notificationresend/notificationresend.service';
 
 @Injectable()
 export class RetryInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private resendservice: NotificationResendService,
+  ) {}
   intercept(context: ExecutionContext, next: CallHandler<any>) {
     const retries =
       this.reflector.get<number>(RETRY_KEY, context.getHandler()) || 0;

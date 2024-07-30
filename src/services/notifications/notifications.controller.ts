@@ -18,6 +18,8 @@ import { NOTIFICATION_PATTERN } from 'src/app/patterns/notification.patterns';
 import { Retry } from 'src/app/decorators/retry.decorator';
 import { NotificationResendService } from './notificationresend/notificationresend.service';
 import { Message, Channel } from 'amqplib';
+import { NotificationData } from './notification/notification.type';
+import { NOTIFICATION_TYPE } from 'src/app/types/app.types';
 
 @Controller('notifications')
 export class NotificationController {
@@ -37,8 +39,16 @@ export class NotificationController {
       const channel = context.getChannelRef() as Channel;
       const originalMsg = context.getMessage() as Message;
       const response = await this.service.sendNotification(data);
+      if (Object.keys(response.data).length > 0) {
+        response.data.createdBy = data.createdBy || 'system';
+        if (data.type === 'email' || data.type === 'sms') {
+          response.data.command = NOTIFICATION_PATTERN.NOTIFY;
+          response.data.pattern = NOTIFICATION_PATTERN.NOTIFY;
+          await this.service.SaveSystemNotification(response.data);
+        }
+      }
       channel.ack(originalMsg);
-      return response;
+      return response.message;
     } catch (error) {
       throw error;
     }
@@ -59,6 +69,36 @@ export class NotificationController {
     }
     channel.ack(originalMsg);
     return 'Notification sent successfully';
+  }
+
+  @EventPattern({ cmd: NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION_SENT })
+  async HandleSentSystemNotification(
+    @Payload() data: RTechSystemNotificationType,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const channel = context.getChannelRef() as Channel;
+      const originalMsg = context.getMessage() as Message;
+      const senddata: NotificationData = {
+        type: NOTIFICATION_TYPE.PUSH_SYSTEM,
+        notificationType: data.type,
+        pattern: data.pattern,
+        priority: data.priority,
+        createdBy: data.createdBy || 'system',
+        data: data.data,
+        recipient:
+          data.recipient.type === 'no broadcast'
+            ? data.recipient.recipients
+            : [{ to: 'broadcast' }],
+        command: NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION_SENT,
+      };
+      await this.service.SaveSystemNotification(senddata);
+      channel.ack(originalMsg);
+      return 'Notification sent successfully';
+    } catch (error) {
+      this.logger.debug(error.message);
+      throw new RpcException(error);
+    }
   }
 
   @EventPattern({ cmd: NOTIFICATION_PATTERN.USER_LOGGED_IN })

@@ -26,9 +26,9 @@ export enum PRIORITY_TYPES {
 }
 
 export enum NotificationDeliveryTypes {
-  SMS_DELIVERY = 'sms delivery',
-  EMAIL_DELIVERY = 'email delivery',
-  PUSH_DELIVERY = 'push delivery',
+  SMS_DELIVERY = 'sms_delivery',
+  EMAIL_DELIVERY = 'email_delivery',
+  PUSH_DELIVERY = 'push_delivery',
 }
 
 export enum MediaTypes {

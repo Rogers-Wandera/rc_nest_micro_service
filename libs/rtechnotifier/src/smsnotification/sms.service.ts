@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { RTechSmsMessage, RTechSmsTypes } from '../types/notify.types';
 import { TwilioSMSService } from './twiliosms.setup';
 import { PahappaSMSService } from './pahappasms.setup';
+import { PRIORITY_TYPES } from 'src/app/types/app.types';
 
 @Injectable()
 export class RTechSmsService {
@@ -12,13 +13,15 @@ export class RTechSmsService {
   ) {
     this.type = 'twilio';
   }
-  private validatePhoneNumber(phoneNumber: string | string[]) {
+  private validatePhoneNumber(
+    phoneNumber: { to: string; priority: PRIORITY_TYPES }[],
+  ) {
     const regex = /^\+?[1-9]\d{1,14}$/;
     let validates: boolean | boolean[] = false;
-    if (Array.isArray(phoneNumber)) {
-      validates = phoneNumber.map((number) => regex.test(number));
+    if (Array.isArray(phoneNumber) && phoneNumber.length > 1) {
+      validates = phoneNumber.map((number) => regex.test(number.to));
     } else {
-      validates = regex.test(phoneNumber);
+      validates = regex.test(phoneNumber[0].to);
     }
     if (Array.isArray(validates)) {
       if (validates.includes(false)) {
