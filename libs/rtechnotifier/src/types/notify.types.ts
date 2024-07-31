@@ -109,18 +109,19 @@ export type EmailOptions = {
   type: 'email';
   payload: RTechSendOptions;
   notificationType?: NotificationTypes;
-};
-
-type SMSOptions = {
-  type: 'sms';
-  payload: RTechSmsOption;
-};
-
-type PushTypes = {
-  type: 'push';
-  payload: PushOptions;
-};
-
-export type NotificationOptions = (EmailOptions | SMSOptions | PushTypes) & {
   createdBy?: string;
 };
+
+export type SMSOptions = {
+  type: 'sms';
+  payload: RTechSmsOption;
+  createdBy?: string;
+};
+
+export type PushTypes = {
+  type: 'push';
+  payload: PushOptions;
+  createdBy?: string;
+};
+
+export type NotificationOptions = EmailOptions | SMSOptions | PushTypes;

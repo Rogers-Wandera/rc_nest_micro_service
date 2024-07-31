@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Scope } from '@nestjs/common';
 import {
   EmailOptions,
   RTechSmsMessage,
   RTechSmsOption,
   RTechSystemNotificationType,
+  SMSOptions,
 } from '@notifier/rtechnotifier/types/notify.types';
 import {
   NOTIFICATION_RESEND_STATUS,
@@ -22,7 +23,7 @@ import { NotificationService } from '../notification/notification.service';
 import { NotificationData } from '../notification/notification.type';
 import { NotificationTypes } from '@notifier/rtechnotifier/types/enums';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class NotificationResendService extends EntityModel<NotificationResend> {
   constructor(
     datasource: EntityDataSource,
@@ -223,22 +224,66 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
       this.entity.command = NOTIFICATION_PATTERN.NOTIFY;
       this.entity.notificationType =
         data.notificationType || NotificationTypes.CUSTOM;
-      this.entity.createdBy = 'system';
-      this.entity.updatedBy = 'system';
+      this.entity.createdBy = data.createdBy || 'system';
+      this.entity.updatedBy = data.createdBy || 'system';
       this.entity.recipientCount = Array.isArray(data.payload.to)
         ? data.payload.to.length
         : 1;
       const response = await this.repository.save(this.entity);
       this.resendbody.entity.notification = response;
+      this.resendbody.entity.createdBy = data.createdBy || 'system';
+      this.resendrecipient.entity.createdBy = data.createdBy || 'system';
       this.resendrecipient.entity.notification = response;
+      const meta: Record<string, string | number | Date | Boolean> = {};
+      for (const key in data.payload.context) {
+        if (key !== 'body') {
+          meta[key] = data.payload.context[key];
+        }
+      }
       await this.resendbody.CreateBody({
         timestamp: new Date(),
         title: data.payload.subject,
         message: data.payload.context.body,
+        template: data.payload.template,
+        meta: meta,
       });
       await this.resendrecipient.CreateRecipient({
         type: 'no broadcast',
         recipients: data.payload.to,
+      });
+      this.entity = {} as any;
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async ResendSmsService(data: SMSOptions) {
+    try {
+      this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.priority = PRIORITY_TYPES.HIGH;
+      this.entity.type = NOTIFICATION_TYPE.SMS;
+      this.entity.command = NOTIFICATION_PATTERN.NOTIFY;
+      this.entity.notificationType =
+        data.payload.message.notificationType || NotificationTypes.CUSTOM;
+      this.entity.createdBy = 'system';
+      this.entity.updatedBy = 'system';
+      this.entity.recipientCount = Array.isArray(data.payload.message.to)
+        ? data.payload.message.to.length
+        : 1;
+      const response = await this.repository.save(this.entity);
+      this.resendbody.entity.notification = response;
+      this.resendrecipient.entity.notification = response;
+      this.resendbody.entity.createdBy = data.createdBy || 'system';
+      this.resendrecipient.entity.createdBy = data.createdBy || 'system';
+      await this.resendbody.CreateBody({
+        timestamp: new Date(),
+        title: `Sms sent from ${data.payload.provider} service`,
+        message: data.payload.message.body,
+      });
+      await this.resendrecipient.CreateRecipient({
+        type: 'no broadcast',
+        recipients: data.payload.message.to,
       });
       return response;
     } catch (error) {
@@ -246,34 +291,95 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
     }
   }
 
-  async ResendSmsService(data: RTechSmsOption) {
+  async ReconcileEmailSms(
+    data: NotificationResendRecipients,
+    type: 'reconcile' | 'resend' = 'reconcile',
+  ) {
     try {
-      this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
-      this.entity.priority = PRIORITY_TYPES.HIGH;
-      this.entity.type = NOTIFICATION_TYPE.SMS;
-      this.entity.command = NOTIFICATION_PATTERN.NOTIFY;
-      this.entity.notificationType =
-        data.message.notificationType || NotificationTypes.CUSTOM;
-      this.entity.createdBy = 'system';
-      this.entity.updatedBy = 'system';
-      this.entity.recipientCount = Array.isArray(data.message.to)
-        ? data.message.to.length
-        : 1;
-      const response = await this.repository.save(this.entity);
-      this.resendbody.entity.notification = response;
-      this.resendrecipient.entity.notification = response;
-      await this.resendbody.CreateBody({
-        timestamp: new Date(),
-        title: `Sms sent from ${data.provider} service`,
-        message: data.message.body,
-      });
-      await this.resendrecipient.CreateRecipient({
-        type: 'no broadcast',
-        recipients: data.message.to,
-      });
-      return response;
+      if (type === 'reconcile') {
+        await this.repository.update(
+          { id: data.notification.id },
+          { resendCount: data.notification.resendCount + 1 },
+        );
+        await this.service.SaveSystemNotification(this.BuildSmsEmailData(data));
+        const check = await this.repository.findOne({
+          where: { id: data.notification.id },
+        });
+        if (
+          check.recipientCount === check.resendCount ||
+          check.resendCount > check.recipientCount
+        ) {
+          await this.repository.update(
+            { id: data.notification.id },
+            { status: NOTIFICATION_RESEND_STATUS.SENT, updateDate: new Date() },
+          );
+        }
+        await this.resendrecipient.repository.update(
+          { id: data.id },
+          { status: NOTIFICATION_RESEND_STATUS.SENT, updateDate: new Date() },
+        );
+      } else {
+        await this.resendrecipient.repository.update(
+          { id: data.id },
+          {
+            status: NOTIFICATION_RESEND_STATUS.RESCHEDULED,
+            updateDate: new Date(),
+            retries: data.retries + 1,
+          },
+        );
+      }
     } catch (error) {
       throw error;
+    }
+  }
+  private BuildSmsEmailData(data: NotificationResendRecipients) {
+    const meta = this.resendbody.HandleMetaRebuild(data.notification.body);
+    const medias = this.resendbody.HandleMediasRebuild(data.notification.body);
+    const recipient = { to: data.recipient, priority: data.priority };
+    const senddata: NotificationData = {
+      recipient: [recipient],
+      data: {
+        meta: meta,
+        mediaUrl: medias,
+        message: data.notification.body.message,
+        timestamp: data.notification.body.timestamp,
+        title: data.notification.body.title,
+      },
+      pattern: data.notification.pattern,
+      command: data.notification.command,
+      createdBy: data.notification.createdBy,
+      type: data.notification.type,
+      priority: data.notification.priority,
+      notificationType: data.notification.notificationType,
+      link: data.notification.link,
+    };
+    return senddata;
+  }
+
+  async HandleCloseResend(data: NotificationResendRecipients) {
+    if (data.retries >= 10) {
+      this.resendrecipient.repository.update(
+        { id: data.id },
+        {
+          status: NOTIFICATION_RESEND_STATUS.FAILED,
+          updateDate: new Date(),
+        },
+      );
+      this.repository.update(
+        { id: data.notification.id },
+        { resendCount: data.notification.resendCount + 1 },
+      );
+      const check = await this.repository.findOne({
+        where: { id: data.notification.id },
+      });
+      if (check.resendCount >= check.recipientCount) {
+        this.repository.update(
+          { id: data.notification.id },
+          {
+            status: NOTIFICATION_RESEND_STATUS.CLOSED,
+          },
+        );
+      }
     }
   }
 }

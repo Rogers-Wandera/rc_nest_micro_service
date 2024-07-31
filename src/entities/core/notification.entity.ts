@@ -19,7 +19,7 @@ import { NotificationRecipient } from './notificationrecipient.entity';
 
 @Entity({ name: 'notifications' })
 export class Notification extends BaseEntityClass {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
   @Column({ type: 'enum', nullable: false, enum: NOTIFICATION_TYPE })
   type: NOTIFICATION_TYPE;

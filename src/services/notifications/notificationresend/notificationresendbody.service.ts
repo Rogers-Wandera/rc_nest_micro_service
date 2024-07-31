@@ -6,6 +6,7 @@ import { EntityModel } from 'src/model/entity.model';
 import { NotificationResendMediaService } from './notificationmedia.service';
 import { NotificationResendMetaService } from './notificationmeta.service';
 import { mediaTypes } from '@notifier/rtechnotifier/types/notify.types';
+import { EmailTemplates } from '@notifier/rtechnotifier/types/enums';
 
 type body = {
   title: string;
@@ -13,6 +14,7 @@ type body = {
   timestamp: Date;
   media?: mediaTypes[];
   meta?: Record<string, string | number | Date | Boolean>;
+  template?: EmailTemplates;
 };
 
 @Injectable()
@@ -27,11 +29,12 @@ export class NotificationResendBodyService extends EntityModel<NotificationResen
 
   async CreateBody(data: body) {
     try {
-      this.entity.createdBy = 'system';
-      this.entity.updatedBy = 'system';
+      this.entity.createdBy = this.entity.createdBy || 'system';
+      this.entity.updatedBy = this.entity.createdBy || 'system';
       this.entity.message = data.message;
       this.entity.title = data.title;
       this.entity.timestamp = data.timestamp;
+      this.entity.template = data.template;
       const entity = this.repository.create(this.entity);
       const response = await this.repository.save(entity);
       this.resendmedia.entity.body = response;

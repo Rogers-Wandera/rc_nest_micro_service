@@ -10,6 +10,7 @@ import { BaseEntityClass } from '../base.entity';
 import { NotificationResend } from './notificationresend.entity';
 import { NotificationResendMedia } from './notificationresendbodymedia.entity';
 import { NotificationResendMeta } from './notificationresendmeta.entity';
+import { EmailTemplates } from '@notifier/rtechnotifier/types/enums';
 
 @Entity({ name: 'notificationresendbody' })
 export class NotificationResendBody extends BaseEntityClass {
@@ -26,6 +27,8 @@ export class NotificationResendBody extends BaseEntityClass {
   message: string;
   @Column({ nullable: false, type: 'datetime' })
   timestamp: Date;
+  @Column({ type: 'varchar', nullable: true, length: 50 })
+  template: EmailTemplates;
   @OneToMany(
     () => NotificationResendMedia,
     (notification) => notification.body,

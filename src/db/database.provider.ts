@@ -4,7 +4,7 @@ import { ConfigOptions } from './configs';
 import { EntityTarget, Repository } from 'typeorm';
 import { ModelService } from 'src/app/contexts/database/model.context';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class DatabaseService {
   private modelServiceInstance: ModelService;
   constructor() {

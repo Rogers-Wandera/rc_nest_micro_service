@@ -4,15 +4,11 @@ import { Request } from 'express';
 import { DatabaseService } from 'src/db/database.provider';
 import { EntityTarget, Repository } from 'typeorm';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class EntityDataSource {
   public model: DatabaseService;
   public request: Request;
-  constructor(
-    @Inject('data_source') model: DatabaseService,
-    @Inject(REQUEST) request: Request,
-  ) {
-    this.request = request;
+  constructor(@Inject('data_source') model: DatabaseService) {
     this.model = model;
   }
   public getRepository<T>(entity: EntityTarget<T>): Repository<T> {

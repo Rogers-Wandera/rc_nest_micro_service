@@ -18,6 +18,8 @@ export enum NOTIFICATION_RESEND_STATUS {
   RESCHEDULED = 'rescheduled',
   SENT = 'sent',
   PENDING = 'pending',
+  CLOSED = 'closed',
+  FAILED = 'failed',
 }
 export enum PRIORITY_TYPES {
   HIGH = 'high',

@@ -35,6 +35,22 @@ import { RTechNotifierModule } from '@notifier/rtechnotifier';
         inject: [ConfigService],
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'NOTIFICATION_FAIL_SERVICE',
+        useFactory: (config: ConfigService<EnvConfig>) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get<string>('rabbitmqurl')],
+            queue: 'failed_notifications_queue',
+            queueOptions: {
+              durable: true,
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
   ],
   providers: [
     NotificationService,
@@ -50,6 +66,7 @@ import { RTechNotifierModule } from '@notifier/rtechnotifier';
   ],
   controllers: [NotificationController],
   exports: [
+    ClientsModule,
     NotificationService,
     NotificationResendService,
     NotificationResendBodyService,

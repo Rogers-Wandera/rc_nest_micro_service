@@ -10,6 +10,7 @@ import { RpcException } from '@nestjs/microservices';
 import { RetryInterceptor } from './app/contexts/interceptors/retry.interceptor';
 import { EventGateWayModule } from './services/events/events.module';
 import { ModelModule } from './model/model.module';
+import { TaskScheduleModule } from './services/scheduler/taskschedule.module';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { ModelModule } from './model/model.module';
     RTechNotifierModule,
     EventGateWayModule,
     ModelModule,
+    TaskScheduleModule,
   ],
   providers: [
     {

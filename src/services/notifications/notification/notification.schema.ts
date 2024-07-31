@@ -64,6 +64,7 @@ export const notificationSchema = Joi.object({
     'any.required': 'type is required',
     'any.only': 'type must be email, sms, or push',
   }),
+  createdBy: Joi.string().optional(),
   payload: Joi.alternatives().conditional('type', {
     is: 'email',
     then: validateEmail,
