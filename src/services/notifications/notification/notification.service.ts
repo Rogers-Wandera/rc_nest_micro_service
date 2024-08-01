@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Scope } from '@nestjs/common';
 import { RTechNotifier } from '@notifier/rtechnotifier';
 import {
   NotificationOptions,
@@ -17,8 +17,9 @@ import {
   NOTIFICATION_TYPE,
   NotificationDeliveryTypes,
 } from 'src/app/types/app.types';
+import { v4 as uuid } from 'uuid';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class NotificationService extends EntityModel<Notification> {
   constructor(
     private readonly rtechservices: RTechNotifier,
@@ -30,7 +31,9 @@ export class NotificationService extends EntityModel<Notification> {
   ) {
     super(Notification, datasource);
   }
-
+  private generateId() {
+    this.entity.id = uuid();
+  }
   async sendNotification(data: NotificationOptions) {
     try {
       if (data.type === 'sms') {
@@ -74,6 +77,7 @@ export class NotificationService extends EntityModel<Notification> {
       } else {
         this.entity.deliveryType = NotificationDeliveryTypes.PUSH_DELIVERY;
       }
+      this.generateId();
       const response = await this.repository.save(this.entity);
       this.body.entity.createdBy = data.createdBy;
       this.recipient.entity.createdBy = data.createdBy;

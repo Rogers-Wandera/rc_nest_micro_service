@@ -11,7 +11,6 @@ import { NotificationOptions } from '@notifier/rtechnotifier/types/notify.types'
 import { Channel, Message } from 'amqplib';
 import { firstValueFrom, retry } from 'rxjs';
 import { RETRY_KEY } from 'src/app/decorators/retry.decorator';
-import { ErrorResponse } from 'src/app/types/error.types';
 import { NotificationResendService } from 'src/services/notifications/notificationresend/notificationresend.service';
 
 @Injectable()

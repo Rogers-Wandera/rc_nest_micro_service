@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import {
   NOTIFICATION_STATUS,
   NOTIFICATION_TYPE,
@@ -19,8 +13,8 @@ import { NotificationRecipient } from './notificationrecipient.entity';
 
 @Entity({ name: 'notifications' })
 export class Notification extends BaseEntityClass {
-  @PrimaryGeneratedColumn('uuid')
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 200, nullable: false })
+  id: string;
   @Column({ type: 'enum', nullable: false, enum: NOTIFICATION_TYPE })
   type: NOTIFICATION_TYPE;
   @Column({ type: 'enum', nullable: false, enum: NOTIFICATION_STATUS })

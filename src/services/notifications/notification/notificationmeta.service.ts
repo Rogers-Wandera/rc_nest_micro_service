@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { NotificationMeta } from 'src/entities/core/notificationmeta.entity';
 import { EntityDataSource } from 'src/model/enity.data.model';
 import { EntityModel } from 'src/model/entity.model';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class NotificationMetaService extends EntityModel<NotificationMeta> {
   constructor(datasource: EntityDataSource) {
     super(NotificationMeta, datasource);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { NotificationResendBody } from 'src/entities/core/notificationresendbody.entity';
 import { EntityDataSource } from 'src/model/enity.data.model';
@@ -17,7 +17,7 @@ type body = {
   template?: EmailTemplates;
 };
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class NotificationResendBodyService extends EntityModel<NotificationResendBody> {
   constructor(
     datasource: EntityDataSource,

@@ -77,7 +77,7 @@ export class TaskScheduleService {
       data.notification.notificationType;
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('0 */2 * * * *')
   async HandleCancelFailed() {
     try {
       const data = await this.resendrecipients.HandleResendRecipients(true);

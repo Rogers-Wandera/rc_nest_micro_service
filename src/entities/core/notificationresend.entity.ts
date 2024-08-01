@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { NOTIFICATION_PATTERN } from 'src/app/patterns/notification.patterns';
 import {
   NOTIFICATION_RESEND_STATUS,
@@ -18,7 +12,7 @@ import { NotificationTypes } from '@notifier/rtechnotifier/types/enums';
 
 @Entity({ name: 'notificationresends' })
 export class NotificationResend extends BaseEntityClass {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar', length: 200, nullable: false })
   id: string;
   @Column({ type: 'enum', enum: NOTIFICATION_TYPE, nullable: false })
   type: NOTIFICATION_TYPE;

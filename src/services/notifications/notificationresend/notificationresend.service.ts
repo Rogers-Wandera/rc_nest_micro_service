@@ -22,6 +22,7 @@ import { NotificationResendRecipients } from 'src/entities/core/notificationrese
 import { NotificationService } from '../notification/notification.service';
 import { NotificationData } from '../notification/notification.type';
 import { NotificationTypes } from '@notifier/rtechnotifier/types/enums';
+import { v4 } from 'uuid';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class NotificationResendService extends EntityModel<NotificationResend> {
@@ -33,8 +34,12 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
   ) {
     super(NotificationResend, datasource);
   }
+  private generateId() {
+    this.entity.id = v4();
+  }
   async ResendSystemNotification(data: RTechSystemNotificationType) {
     try {
+      this.generateId();
       this.entity.pattern = data.pattern;
       this.entity.priority = data.priority;
       this.entity.type = NOTIFICATION_TYPE.PUSH_SYSTEM;
@@ -218,6 +223,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
 
   async ResendEmailService(data: EmailOptions) {
     try {
+      this.generateId();
       this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
       this.entity.priority = PRIORITY_TYPES.HIGH;
       this.entity.type = NOTIFICATION_TYPE.EMAIL;
@@ -260,6 +266,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
 
   async ResendSmsService(data: SMSOptions) {
     try {
+      this.generateId();
       this.entity.pattern = NOTIFICATION_PATTERN.NOTIFY;
       this.entity.priority = PRIORITY_TYPES.HIGH;
       this.entity.type = NOTIFICATION_TYPE.SMS;

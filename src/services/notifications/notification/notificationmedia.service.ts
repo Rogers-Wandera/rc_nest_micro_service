@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { mediaTypes } from '@notifier/rtechnotifier/types/notify.types';
 import { NotificationMedia } from 'src/entities/core/notificationmedia.entity';
 import { EntityDataSource } from 'src/model/enity.data.model';
 import { EntityModel } from 'src/model/entity.model';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class NotificationMediaService extends EntityModel<NotificationMedia> {
   constructor(datasource: EntityDataSource) {
     super(NotificationMedia, datasource);
