@@ -146,4 +146,12 @@ export class NotificationController {
       throw new RpcException(error);
     }
   }
+
+  @MessagePattern({ cmd: NOTIFICATION_PATTERN.HEALTHY_CHECK })
+  HandleHealthyCheck(@Payload() data: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef() as Channel;
+    const originalMsg = context.getMessage() as Message;
+    channel.ack(originalMsg);
+    return `[${data}] is up and running`;
+  }
 }
