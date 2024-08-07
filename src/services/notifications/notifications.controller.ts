@@ -60,15 +60,20 @@ export class NotificationController {
     @Payload() data: RTechSystemNotificationType,
     @Ctx() context: RmqContext,
   ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    if (data.resendId) {
-      await this.resendservice.ReconcileResend(data);
-    } else {
-      await this.service.SendEventMessage(data);
+    try {
+      const channel = context.getChannelRef();
+      const originalMsg = context.getMessage();
+      if (data.resendId) {
+        await this.resendservice.ReconcileResend(data);
+      } else {
+        await this.service.SendEventMessage(data);
+      }
+      channel.ack(originalMsg);
+      return 'Notification sent successfully';
+    } catch (error) {
+      this.logger.debug(error.message);
+      // throw new RpcException(error);
     }
-    channel.ack(originalMsg);
-    return 'Notification sent successfully';
   }
 
   @EventPattern({ cmd: NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION_SENT })
@@ -97,7 +102,7 @@ export class NotificationController {
       return 'Notification sent successfully';
     } catch (error) {
       this.logger.debug(error.message);
-      throw new RpcException(error);
+      // throw new RpcException(error);
     }
   }
 
@@ -121,7 +126,7 @@ export class NotificationController {
       return 'Login notification sent successfully';
     } catch (error) {
       this.logger.debug(error.message);
-      throw new RpcException(error);
+      // throw new RpcException(error);
     }
   }
 
@@ -143,7 +148,7 @@ export class NotificationController {
       return 'Notification reschedule successfully';
     } catch (error) {
       this.logger.debug(error.message);
-      throw new RpcException(error);
+      // throw new RpcException(error);
     }
   }
 

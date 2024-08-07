@@ -13,8 +13,10 @@ import { Notification } from './notification.entity';
 export class NotificationRecipient extends BaseEntityClass {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ nullable: false })
   recipient: string;
+  @Column({ nullable: false })
+  recipientHash: string;
   @ManyToOne(() => Notification, (notification) => notification.recipients, {
     nullable: false,
     eager: true,

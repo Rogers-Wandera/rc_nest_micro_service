@@ -19,6 +19,6 @@ export class NotificationMeta extends BaseEntityClass {
   body: NotificationBody;
   @Column({ nullable: false, type: 'varchar', length: 100 })
   name: string;
-  @Column({ nullable: false, type: 'varchar', length: 150 })
+  @Column({ nullable: false, type: 'text' })
   value: string | number | Boolean | Date;
 }

@@ -15,5 +15,5 @@ export const ConfigOptions = (): DataSourceOptions => ({
     path.join(__dirname, '..', '**', '*.view.{ts,js}'),
   ],
   migrations: ['src/migration/**/*.ts'],
-  subscribers: ['src/subscriber/**/*.ts'],
+  subscribers: [path.join(__dirname, '..', '**', '*.subscriber.{ts,js}')],
 });

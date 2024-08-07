@@ -46,6 +46,11 @@ export const envconfig = () => ({
     username: process.env.PAHAPPA_USER_NAME,
     senderid: process.env.PAHAPPA_SENDER_ID,
   },
+  encryption_file: {
+    key: process.env.ENCRYPTION_KEY,
+    algorithm: 'aes-256-cbc',
+    ivLength: 16,
+  },
 });
 
 // create the type from the config
@@ -55,3 +60,4 @@ export type firebase_account = EnvConfig['firebaseServiceAccount'];
 export type mailconfig = EnvConfig['mail'];
 export type twilioconfig = EnvConfig['twilio'];
 export type pahappaconfig = EnvConfig['pahappa'];
+export type encryption = EnvConfig['encryption_file'];

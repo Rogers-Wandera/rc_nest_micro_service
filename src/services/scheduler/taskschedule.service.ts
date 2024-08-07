@@ -22,6 +22,7 @@ export class TaskScheduleService {
       if (data.length > 0) {
         for (const notification in data) {
           try {
+            const type = data[notification].notification.type;
             if (data[notification].notification.type === 'email') {
               this.buildEmailMessage(data[notification]);
               await this.rtechservice.notification('email');
@@ -30,6 +31,9 @@ export class TaskScheduleService {
               await this.rtechservice.notification('sms');
             }
             await this.resendservice.ReconcileEmailSms(data[notification]);
+            this.logger.error(
+              `${type} has been sent to ${data[notification].recipient}`,
+            );
           } catch (error) {
             await this.resendservice.ReconcileEmailSms(
               data[notification],

@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable, Scope } from '@nestjs/common';
 import {
   EmailOptions,
-  RTechSmsMessage,
-  RTechSmsOption,
   RTechSystemNotificationType,
   SMSOptions,
 } from '@notifier/rtechnotifier/types/notify.types';
@@ -71,7 +69,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
   async GetRecipientResendNotification(recipient: string) {
     const response = await this.resendrecipient.repository.find({
       where: {
-        recipient,
+        recipientHash: this.Hash(recipient),
         status: In([
           NOTIFICATION_RESEND_STATUS.PENDING,
           NOTIFICATION_RESEND_STATUS.RESCHEDULED,
@@ -139,7 +137,7 @@ export class NotificationResendService extends EntityModel<NotificationResend> {
         const res = await this.resendrecipient.repository.findOne({
           relations: { notification: true },
           where: {
-            recipient: recipients[recipient].to as string,
+            recipientHash: this.Hash(recipients[recipient].to as string),
             notification: { id: resendId },
           },
         });

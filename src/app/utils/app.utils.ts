@@ -66,4 +66,8 @@ export class Utilities {
 
     return formatted.trim();
   }
+
+  Hash(data: string): string {
+    return CryptoJs.SHA256(data).toString();
+  }
 }

@@ -82,7 +82,6 @@ export class NotificationService extends EntityModel<Notification> {
       this.body.entity.createdBy = data.createdBy;
       this.recipient.entity.createdBy = data.createdBy;
       this.body.entity.notification = response;
-
       this.recipient.entity.notification = response;
       await this.body.CreateBody({
         timestamp: data.data.timestamp,
