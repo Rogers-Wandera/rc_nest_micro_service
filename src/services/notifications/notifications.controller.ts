@@ -5,7 +5,6 @@ import {
   MessagePattern,
   Payload,
   RmqContext,
-  RpcException,
 } from '@nestjs/microservices';
 import { NotificationService } from './notification/notification.service';
 import { JoiValidator } from 'src/app/contexts/interceptors/joi.interceptor';
@@ -28,6 +27,7 @@ export class NotificationController {
     private readonly service: NotificationService,
     private readonly resendservice: NotificationResendService,
   ) {}
+
   @UseInterceptors(new JoiValidator(notificationSchema))
   @MessagePattern({ cmd: NOTIFICATION_PATTERN.NOTIFY })
   @Retry(2)

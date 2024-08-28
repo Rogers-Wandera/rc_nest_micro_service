@@ -18,6 +18,7 @@ import {
   NotificationDeliveryTypes,
 } from 'src/app/types/app.types';
 import { v4 as uuid } from 'uuid';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class NotificationService extends EntityModel<Notification> {
@@ -54,7 +55,11 @@ export class NotificationService extends EntityModel<Notification> {
   }
 
   async SendEventMessage(payload: RTechSystemNotificationType) {
-    return this.io.emit(NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION, payload);
+    const response = this.io.emit(
+      NOTIFICATION_PATTERN.SYSTEM_NOTIFICATION,
+      payload,
+    );
+    return response as IoClient<DefaultEventsMap, DefaultEventsMap>;
   }
 
   async SaveSystemNotification(data: NotificationData) {
