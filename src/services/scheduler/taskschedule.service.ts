@@ -31,7 +31,7 @@ export class TaskScheduleService {
               await this.rtechservice.notification('sms');
             }
             await this.resendservice.ReconcileEmailSms(data[notification]);
-            this.logger.error(
+            this.logger.log(
               `${type} has been sent to ${data[notification].recipient}`,
             );
           } catch (error) {

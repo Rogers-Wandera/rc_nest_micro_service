@@ -1,4 +1,4 @@
-import { Controller, Logger, UseInterceptors } from '@nestjs/common';
+import { Controller, Inject, Logger, UseInterceptors } from '@nestjs/common';
 import {
   Ctx,
   EventPattern,
@@ -19,6 +19,7 @@ import { NotificationResendService } from './notificationresend/notificationrese
 import { Message, Channel } from 'amqplib';
 import { NotificationData } from './notification/notification.type';
 import { NOTIFICATION_TYPE } from 'src/app/types/app.types';
+import { InjectIoClientProvider, IoClient } from 'nestjs-io-client';
 
 @Controller('notifications')
 export class NotificationController {
@@ -26,6 +27,8 @@ export class NotificationController {
   constructor(
     private readonly service: NotificationService,
     private readonly resendservice: NotificationResendService,
+    @InjectIoClientProvider()
+    private readonly io: IoClient,
   ) {}
 
   @UseInterceptors(new JoiValidator(notificationSchema))
@@ -48,7 +51,6 @@ export class NotificationController {
         }
       }
       channel.ack(originalMsg);
-      return response.message;
     } catch (error) {
       throw error;
     }
@@ -158,5 +160,16 @@ export class NotificationController {
     const originalMsg = context.getMessage() as Message;
     channel.ack(originalMsg);
     return `[${data}] is up and running`;
+  }
+
+  @EventPattern({ cmd: NOTIFICATION_PATTERN.USER_LOGGED_OUT })
+  HandleUserLogout(
+    @Payload() data: { userId: string },
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef() as Channel;
+    const originalMsg = context.getMessage() as Message;
+    this.io.emit(NOTIFICATION_PATTERN.USER_OFFLINE, data);
+    channel.ack(originalMsg);
   }
 }
