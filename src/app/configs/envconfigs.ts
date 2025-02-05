@@ -51,6 +51,14 @@ export const envconfig = () => ({
     algorithm: 'aes-256-cbc',
     ivLength: 16,
   },
+
+  cloudinary: {
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
+    secure: true,
+    mainfolder: process.env.CLOUD_MAIN_FOLDER,
+  },
 });
 
 // create the type from the config
@@ -61,3 +69,4 @@ export type mailconfig = EnvConfig['mail'];
 export type twilioconfig = EnvConfig['twilio'];
 export type pahappaconfig = EnvConfig['pahappa'];
 export type encryption = EnvConfig['encryption_file'];
+export type cloudinary = EnvConfig['cloudinary'];

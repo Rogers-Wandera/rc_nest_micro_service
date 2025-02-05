@@ -11,6 +11,7 @@ import { RetryInterceptor } from './app/contexts/interceptors/retry.interceptor'
 import { EventGateWayModule } from './services/events/events.module';
 import { ModelModule } from './model/model.module';
 import { TaskScheduleModule } from './services/scheduler/taskschedule.module';
+import { UploaderModule } from './services/uploader/uploader.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { TaskScheduleModule } from './services/scheduler/taskschedule.module';
     EventGateWayModule,
     ModelModule,
     TaskScheduleModule,
+    UploaderModule,
   ],
   providers: [
     {
@@ -55,6 +57,6 @@ import { TaskScheduleModule } from './services/scheduler/taskschedule.module';
     },
     { provide: APP_INTERCEPTOR, useClass: RetryInterceptor },
   ],
-  exports: [RTechNotifierModule, NotificationModule],
+  exports: [RTechNotifierModule, NotificationModule, UploaderModule],
 })
 export class AppModule {}

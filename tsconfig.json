@@ -19,8 +19,18 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@notifier/rtechnotifier": ["libs/rtechnotifier/src"],
-      "@notifier/rtechnotifier/*": ["libs/rtechnotifier/src/*"]
+      "@notifier/rtechnotifier": [
+        "libs/rtechnotifier/src"
+      ],
+      "@notifier/rtechnotifier/*": [
+        "libs/rtechnotifier/src/*"
+      ],
+      "@rupload/ruploader": [
+        "libs/ruploader/src"
+      ],
+      "@rupload/ruploader/*": [
+        "libs/ruploader/src/*"
+      ]
     }
   }
 }

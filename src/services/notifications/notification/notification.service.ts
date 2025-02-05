@@ -43,6 +43,9 @@ export class NotificationService extends EntityModel<Notification> {
         }
         this.rtechservices.smsoptions = data.payload;
       } else if (data.type === 'email') {
+        if (data.payload.to?.length <= 0) {
+          throw new RpcException('No email number provided');
+        }
         this.rtechservices.mailoptions = data.payload;
       } else {
         this.rtechservices.pushoptions = data.payload;
@@ -72,6 +75,9 @@ export class NotificationService extends EntityModel<Notification> {
       this.entity.link = data.link;
       this.entity.createdBy = data.createdBy;
       this.entity.updatedBy = data.createdBy;
+      if (data.recipient?.length <= 0) {
+        return new BadRequestException('No recipients provided');
+      }
       this.entity.recipientCount = Array.isArray(data.recipient)
         ? data.recipient.length
         : 1;

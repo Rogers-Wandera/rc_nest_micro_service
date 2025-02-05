@@ -23,6 +23,9 @@ export class TaskScheduleService {
         for (const notification in data) {
           try {
             const type = data[notification].notification.type;
+            if (data[notification].recipient?.length <= 0) {
+              return;
+            }
             if (data[notification].notification.type === 'email') {
               this.buildEmailMessage(data[notification]);
               await this.rtechservice.notification('email');

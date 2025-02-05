@@ -12,6 +12,10 @@
   },
   "moduleNameMapper": {
     "@notifier/rtechnotifier/(.*)": "<rootDir>/../libs/rtechnotifier/src/$1",
-    "@notifier/rtechnotifier": "<rootDir>/../libs/rtechnotifier/src"
+    "@notifier/rtechnotifier": "<rootDir>/../libs/rtechnotifier/src",
+    "@ior/iorclient/(.*)": "<rootDir>/../libs/iorclient/src/$1",
+    "@ior/iorclient": "<rootDir>/../libs/iorclient/src",
+    "@rupload/ruploader/(.*)": "<rootDir>/../libs/ruploader/src/$1",
+    "@rupload/ruploader": "<rootDir>/../libs/ruploader/src"
   }
 }

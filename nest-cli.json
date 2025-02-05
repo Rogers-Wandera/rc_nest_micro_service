@@ -24,6 +24,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/rtechnotifier/tsconfig.lib.json"
       }
+    },
+    "ruploader": {
+      "type": "library",
+      "root": "libs/ruploader",
+      "entryFile": "index",
+      "sourceRoot": "libs/ruploader/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/ruploader/tsconfig.lib.json"
+      }
     }
   }
 }
