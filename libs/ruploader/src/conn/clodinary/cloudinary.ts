@@ -52,7 +52,7 @@ export class CloudinaryService implements I_RUpload {
           if (error) {
             observer.error({
               error: `Cloudinary error: ${error.message}`,
-              filename: file.filename,
+              filename: meta?.type || file.filename,
               meta: meta,
             });
           } else {
@@ -63,7 +63,7 @@ export class CloudinaryService implements I_RUpload {
                 publicUrl: result.url,
                 meta,
                 results: result,
-                filename: file.fieldname,
+                filename: meta?.type || file.filename,
               },
             });
             observer.complete();
@@ -78,7 +78,7 @@ export class CloudinaryService implements I_RUpload {
                   publicUrl: result.url,
                   meta,
                   results: result,
-                  filename: file.fieldname,
+                  filename: meta?.type || file.filename,
                 },
               });
             }
@@ -91,13 +91,7 @@ export class CloudinaryService implements I_RUpload {
         uploadedBytes += chunk.length;
         const progress = Math.round((uploadedBytes / file.size) * 100);
 
-        observer.next({ progress });
-        if (this.socket) {
-          this.socket.emit('upload-progress', {
-            file: file.filename,
-            progress,
-          });
-        }
+        observer.next({ progress, filename: meta?.type || file.filename });
       });
       fileStream.pipe(stream);
     });

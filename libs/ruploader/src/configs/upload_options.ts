@@ -39,4 +39,5 @@ export type RConfigOptions = (
 export type RUpload_Observable_Return = {
   progress: number;
   data?: RUploadReturn;
+  filename?: string;
 };
