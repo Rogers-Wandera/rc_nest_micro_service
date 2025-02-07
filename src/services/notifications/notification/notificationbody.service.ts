@@ -46,7 +46,7 @@ export class NotificationBodyService extends EntityModel<NotificationBody> {
     }
   }
 
-  HandleMediasRebuild(body: NotificationResendBody) {
+  HandleMediasRebuild(body: NotificationBody) {
     const mediaUrl: mediaTypes[] = [];
     if (body.media.length > 0) {
       for (const media in body.media) {
@@ -60,7 +60,7 @@ export class NotificationBodyService extends EntityModel<NotificationBody> {
     return mediaUrl;
   }
 
-  HandleMetaRebuild(body: NotificationResendBody) {
+  HandleMetaRebuild(body: NotificationBody) {
     const meta: Record<string, string | number | Boolean | Date> = {};
     if (body.meta.length > 0) {
       for (const item in body.meta) {

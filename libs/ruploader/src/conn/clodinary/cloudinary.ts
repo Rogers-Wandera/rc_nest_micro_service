@@ -67,6 +67,15 @@ export class CloudinaryService implements I_RUpload {
               },
             });
             observer.complete();
+            if (this.options?.callback) {
+              this.options.callback({
+                type: RUPLOADER_TYPE.CLOUDINARY,
+                publicUrl: result.url,
+                meta,
+                results: result,
+                filename: meta?.type || file.filename,
+              });
+            }
             if (this.socket) {
               const pattern = this?.options?.pattern
                 ? this.options.pattern

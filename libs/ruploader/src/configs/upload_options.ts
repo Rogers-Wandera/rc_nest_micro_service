@@ -34,6 +34,7 @@ export type RConfigOptions = (
   | FireStoreConfigOptions
 ) & {
   pattern?: string;
+  callback?: (results: RUploadReturn) => void;
 };
 
 export type RUpload_Observable_Return = {

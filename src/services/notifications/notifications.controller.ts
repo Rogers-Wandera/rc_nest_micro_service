@@ -1,5 +1,6 @@
 import { Controller, Inject, Logger, UseInterceptors } from '@nestjs/common';
 import {
+  ClientProxy,
   Ctx,
   EventPattern,
   MessagePattern,
@@ -29,6 +30,7 @@ export class NotificationController {
     private readonly resendservice: NotificationResendService,
     @InjectIoClientProvider()
     private readonly io: IoClient,
+    @Inject('NOTIFICATION_SERVICE') private rabbitClient: ClientProxy,
   ) {}
 
   @UseInterceptors(new JoiValidator(notificationSchema))
@@ -51,6 +53,7 @@ export class NotificationController {
         }
       }
       channel.ack(originalMsg);
+      return 'Notification sent successfully';
     } catch (error) {
       throw error;
     }
@@ -124,6 +127,9 @@ export class NotificationController {
           await this.service.SendEventMessage(resend);
         }
       }
+      this.rabbitClient.emit(NOTIFICATION_PATTERN.USER_NOTIFICATIONS, {
+        userId: data.userId,
+      });
       channel.ack(originalMsg);
       return 'Login notification sent successfully';
     } catch (error) {
@@ -170,6 +176,21 @@ export class NotificationController {
     const channel = context.getChannelRef() as Channel;
     const originalMsg = context.getMessage() as Message;
     this.io.emit(NOTIFICATION_PATTERN.USER_OFFLINE, data);
+    channel.ack(originalMsg);
+  }
+
+  @EventPattern(NOTIFICATION_PATTERN.USER_NOTIFICATIONS)
+  async HandleGetUserNotififcations(
+    @Payload() data: { userId: string },
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef() as Channel;
+    const originalMsg = context.getMessage() as Message;
+    const response = await this.service.getUserSystemNotifications(data.userId);
+    this.io.emit(NOTIFICATION_PATTERN.USER_NOTIFICATIONS, {
+      data: response,
+      userId: data.userId,
+    });
     channel.ack(originalMsg);
   }
 }

@@ -4,6 +4,8 @@ export enum NotificationTypes {
   ERROR = 'error',
   SUCCESS = 'success',
   CUSTOM = 'custom',
+  UPLOAD = 'upload',
+  ANNOUNCEMENT = 'announcements',
 }
 export enum EmailTemplates {
   VERIFY_EMAIL = 'verify',
