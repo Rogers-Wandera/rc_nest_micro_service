@@ -127,9 +127,12 @@ export class NotificationController {
           await this.service.SendEventMessage(resend);
         }
       }
-      this.rabbitClient.emit(NOTIFICATION_PATTERN.USER_NOTIFICATIONS, {
-        userId: data.userId,
-      });
+      this.rabbitClient.emit(
+        { cmd: NOTIFICATION_PATTERN.USER_NOTIFICATIONS },
+        {
+          userId: data.userId,
+        },
+      );
       channel.ack(originalMsg);
       return 'Login notification sent successfully';
     } catch (error) {
@@ -179,7 +182,7 @@ export class NotificationController {
     channel.ack(originalMsg);
   }
 
-  @EventPattern(NOTIFICATION_PATTERN.USER_NOTIFICATIONS)
+  @EventPattern({ cmd: NOTIFICATION_PATTERN.USER_NOTIFICATIONS })
   async HandleGetUserNotififcations(
     @Payload() data: { userId: string },
     @Ctx() context: RmqContext,
@@ -192,5 +195,24 @@ export class NotificationController {
       userId: data.userId,
     });
     channel.ack(originalMsg);
+  }
+
+  @EventPattern({ cmd: NOTIFICATION_PATTERN.UPDATE_READ })
+  async HandleUpdateRead(
+    @Payload() data: { id: string; userId: string },
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const channel = context.getChannelRef() as Channel;
+      const originalMsg = context.getMessage() as Message;
+      await this.service.UpdateReadStatus(data);
+      this.rabbitClient.emit(
+        { cmd: NOTIFICATION_PATTERN.USER_NOTIFICATIONS },
+        { userId: data.userId },
+      );
+      channel.ack(originalMsg);
+    } catch (error) {
+      this.logger.error(`Update Read Error: `, error.message);
+    }
   }
 }

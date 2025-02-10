@@ -17,6 +17,7 @@ export class EventGatewayService {
   @OnConnect()
   connect() {
     console.log('socket connected to the server', `[${this.io.connected}]`);
+    this.io.emit('connected_back', { message: 'connected' });
   }
 
   @OnConnectError()

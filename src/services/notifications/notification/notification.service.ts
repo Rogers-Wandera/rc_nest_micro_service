@@ -21,9 +21,10 @@ import {
 } from 'src/app/types/app.types';
 import { v4 as uuid } from 'uuid';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { In } from 'typeorm';
+import { In, MoreThanOrEqual, Not } from 'typeorm';
 import { NotificationRecipient } from 'src/entities/core/notificationrecipient.entity';
 import { NotificationTypes } from '@notifier/rtechnotifier/types/enums';
+import { subDays } from 'date-fns';
 
 const PRIORITY_ORDER: Record<PRIORITY_TYPES, number> = {
   [PRIORITY_TYPES.HIGH]: 3,
@@ -126,21 +127,36 @@ export class NotificationService extends EntityModel<Notification> {
 
   async getUserSystemNotifications(recipient: string) {
     try {
+      const twentyDaysAgo = subDays(new Date(), 20);
       const response = await this.recipient.repository.find({
-        where: {
-          recipientHash: this.Hash(recipient),
-          status: In([
-            NOTIFICATION_STATUS.SENT,
-            NOTIFICATION_STATUS.RECIEVED,
-            NOTIFICATION_STATUS.READ,
-          ]),
-        },
+        where: [
+          {
+            recipientHash: this.Hash(recipient),
+            status: In([
+              NOTIFICATION_STATUS.SENT,
+              NOTIFICATION_STATUS.RECIEVED,
+              NOTIFICATION_STATUS.READ,
+            ]),
+            creationDate: MoreThanOrEqual(twentyDaysAgo),
+            notification: {
+              type: In([NOTIFICATION_TYPE.PUSH, NOTIFICATION_TYPE.PUSH_SYSTEM]),
+            },
+          },
+        ],
+        order: { creationDate: 'DESC' },
       });
       if (response.length > 0) {
-        const resenddata: RTechSystemNotificationType[] = [];
+        const resenddata: (RTechSystemNotificationType & {
+          status: NOTIFICATION_STATUS;
+          id: string;
+        })[] = [];
         for (const item of response) {
           const data = this.HandleBuildData(item);
-          resenddata.push(data);
+          resenddata.push({
+            ...data,
+            status: item.notification.status,
+            id: item.notification.id,
+          });
         }
         const uploads = resenddata
           .filter((data) => data.type === NotificationTypes.UPLOAD)
@@ -156,14 +172,34 @@ export class NotificationService extends EntityModel<Notification> {
         const announcements = resenddata
           .filter((data) => data.type !== NotificationTypes.ANNOUNCEMENT)
           .sort(sortByPriority);
+
+        const all = resenddata;
+        const urgent = all.filter(
+          (item) =>
+            item.priority === PRIORITY_TYPES.HIGH &&
+            item.status !== NOTIFICATION_STATUS.READ,
+        );
+        const unread = all.filter(
+          (item) => item.status !== NOTIFICATION_STATUS.READ,
+        );
         return {
           uploads: uploads,
           announcements: announcements,
           other: other,
+          all: all,
+          urgent: urgent,
+          unread: unread,
         };
       }
 
-      return { uploads: [], announcements: [], other: [] };
+      return {
+        uploads: [],
+        announcements: [],
+        other: [],
+        all: [],
+        urgent: [],
+        unread: [],
+      };
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -193,5 +229,25 @@ export class NotificationService extends EntityModel<Notification> {
       resendId: recipient.notification.id,
     };
     return data;
+  }
+
+  async UpdateReadStatus({ id, userId }: { id: string; userId: string }) {
+    try {
+      const exists = await this.repository.findOne({
+        where: {
+          id,
+          status: Not(In([NOTIFICATION_STATUS.READ])),
+          recipients: {
+            recipientHash: this.Hash(userId),
+          },
+        },
+      });
+      if (exists) {
+        exists.status = NOTIFICATION_STATUS.READ;
+        await this.repository.save(exists);
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 }
