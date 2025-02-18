@@ -118,6 +118,12 @@ export class UploaderController {
         await this.notificationservice.SaveSystemNotification(
           this.buildSystemNotification(data, results.filename),
         );
+        this.rabbitClient.emit(
+          { cmd: NOTIFICATION_PATTERN.USER_NOTIFICATIONS },
+          {
+            userId: data.meta.userId,
+          },
+        );
       }
     } catch (error) {
       this.logger.error(error.message);
