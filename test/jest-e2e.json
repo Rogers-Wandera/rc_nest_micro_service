@@ -16,6 +16,8 @@
     "@ior/iorclient/(.*)": "<rootDir>/../libs/iorclient/src/$1",
     "@ior/iorclient": "<rootDir>/../libs/iorclient/src",
     "@rupload/ruploader/(.*)": "<rootDir>/../libs/ruploader/src/$1",
-    "@rupload/ruploader": "<rootDir>/../libs/ruploader/src"
+    "@rupload/ruploader": "<rootDir>/../libs/ruploader/src",
+    "@ip/iplookup/(.*)": "<rootDir>/../libs/iplookup/src/$1",
+    "@ip/iplookup": "<rootDir>/../libs/iplookup/src"
   }
 }

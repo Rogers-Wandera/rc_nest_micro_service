@@ -28,6 +28,18 @@ async function bootstrap() {
       },
     },
   });
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RMQ_URL],
+      queue: 'events_queue',
+      noAck: false,
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
   await app.startAllMicroservices();
   await app.listen(3000).then(() => console.log('Microservice is listening'));
   app.enableShutdownHooks();

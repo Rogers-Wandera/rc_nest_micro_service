@@ -12,6 +12,7 @@ import { EventGateWayModule } from './services/events/events.module';
 import { ModelModule } from './model/model.module';
 import { TaskScheduleModule } from './services/scheduler/taskschedule.module';
 import { UploaderModule } from './services/uploader/uploader.module';
+import { IplookupModule } from '@ip/iplookup';
 
 @Global()
 @Module({
@@ -29,6 +30,7 @@ import { UploaderModule } from './services/uploader/uploader.module';
     ModelModule,
     TaskScheduleModule,
     UploaderModule,
+    IplookupModule,
   ],
   providers: [
     {
@@ -57,6 +59,11 @@ import { UploaderModule } from './services/uploader/uploader.module';
     },
     { provide: APP_INTERCEPTOR, useClass: RetryInterceptor },
   ],
-  exports: [RTechNotifierModule, NotificationModule, UploaderModule],
+  exports: [
+    RTechNotifierModule,
+    NotificationModule,
+    UploaderModule,
+    IplookupModule,
+  ],
 })
 export class AppModule {}

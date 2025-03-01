@@ -30,6 +30,12 @@
       ],
       "@rupload/ruploader/*": [
         "libs/ruploader/src/*"
+      ],
+      "@ip/iplookup": [
+        "libs/iplookup/src"
+      ],
+      "@ip/iplookup/*": [
+        "libs/iplookup/src/*"
       ]
     }
   }

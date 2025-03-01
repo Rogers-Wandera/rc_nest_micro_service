@@ -11,6 +11,19 @@
       },
       {
         "include": "**/*.html"
+      },
+      {
+        "include": "libs/rtechnotifier/assets/**/*",
+        "outDir": "dist/libs/rtechnotifier/assets",
+        "watchAssets": true
+      },
+      {
+        "include": "libs/ruploader/assets/**/*",
+        "outDir": "dist/libs/ruploader/assets"
+      },
+      {
+        "include": "libs/iplookup/assets/**/*",
+        "outDir": "dist/libs/iplookup/assets"
       }
     ],
     "webpack": false
@@ -32,6 +45,15 @@
       "sourceRoot": "libs/ruploader/src",
       "compilerOptions": {
         "tsConfigPath": "libs/ruploader/tsconfig.lib.json"
+      }
+    },
+    "iplookup": {
+      "type": "library",
+      "root": "libs/iplookup",
+      "entryFile": "index",
+      "sourceRoot": "libs/iplookup/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/iplookup/tsconfig.lib.json"
       }
     }
   }
